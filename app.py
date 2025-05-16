@@ -81,7 +81,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 🖼️ Logo & Title ---
-st.image("sreyas_logo.png", width=220)  # Replace with actual logo if available
+st.image("https://facultytub.com/wp-content/uploads/2024/01/sreyas_logo_ygezen-800x445.png", width=220)  # Replace with actual logo if available
 st.markdown("<div class='title'>Sreyas College AI Assistant</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>🤖 Ask anything about the Sreyas Institute of Engineering & Technology website</div>", unsafe_allow_html=True)
 
