@@ -9,55 +9,81 @@ GOOGLE_API_KEY = "AIzaSyBdryy1A2mZ31BRMwMUL1dj5rT7-GUsRRg"
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# Function to extract website content
+# Function to extract in-depth website content
 def extract_website_content(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+    }
     try:
-        response = requests.get(url, timeout=10)
+        # Get the website content
+        response = requests.get(url, headers=headers, timeout=20)
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
-        for tag in soup(["script", "style", "noscript", "iframe"]):
+
+        # Remove unnecessary tags such as scripts, styles, etc.
+        for tag in soup(["script", "style", "noscript", "iframe", "footer", "header", "nav"]):
             tag.decompose()
+
+        # Extract all text content from the page, cleaned up
         text = soup.get_text(separator="\n", strip=True)
-        return text[:15000]
+
+        # Fetch the metadata, like description, keywords, etc.
+        meta_tags = soup.find_all("meta")
+        meta_info = "\n".join([str(tag) for tag in meta_tags if 'name' in tag.attrs and tag.attrs['name'].lower() in ['description', 'keywords']])
+
+        # Fetch headings (H1, H2, H3, etc.)
+        headings = "\n".join([str(tag.get_text()) for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])])
+
+        # Combine text content, metadata, and headings for rich context
+        full_text = text + "\n\nMetadata:\n" + meta_info + "\n\nHeadings:\n" + headings
+
+        # Limit the content to the first 20000 characters to keep it manageable
+        return full_text[:20000]
     except Exception as e:
         return f"Error fetching website: {e}"
 
-# Function to get response from Gemini
+# Function to get a response from Gemini
 def chat_about_website(url, user_question):
     content = extract_website_content(url)
+    if content.startswith("Error"):
+        return content  # Return the error message directly
     prompt = f"Website content:\n{content}\n\nUser question: {user_question}"
     response = model.generate_content(prompt)
     return response.text
 
-# --- ✨ White Background CSS ---
+# --- ✨ Background CSS with Adjustments ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
     .stApp {
-        background-color: #ffffff;
+        background-color: #f0f8ff; /* Light blue background */
         color: #333333;
         font-family: 'Poppins', sans-serif;
     }
 
     .title {
         text-align: center;
-        font-size: 42px;
+        font-size: 48px;
         font-weight: 700;
         color: #004080;
         margin-bottom: 20px;
+        text-transform: uppercase;
     }
 
     .subtitle {
         text-align: center;
-        font-size: 20px;
-        color: #444444;
-        margin-bottom: 30px;
+        font-size: 22px;
+        color: #555555;
+        margin-bottom: 40px;
     }
 
     .stTextInput input {
-        background-color: #f2f2f2;
+        background-color: #e0f7fa; /* Light cyan for the input */
         color: #333333;
         border: 1px solid #cccccc;
+        border-radius: 5px;
     }
 
     .stButton button {
@@ -77,11 +103,23 @@ st.markdown("""
     .stSpinner {
         color: #004080;
     }
+
+    .stMarkdown {
+        font-size: 18px;
+        color: #333333;
+    }
+
+    .answer-box {
+        background-color: #f0f8ff;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #cccccc;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # --- 🖼️ Logo & Title ---
-st.image("https://facultytub.com/wp-content/uploads/2024/01/sreyas_logo_ygezen-800x445.png", width=220)  # Replace with actual logo if available
+st.image("https://facultytub.com/wp-content/uploads/2024/01/sreyas_logo_ygezen-800x445.png", width=220)
 st.markdown("<div class='title'>Sreyas College AI Assistant</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>🤖 Ask anything about the Sreyas Institute of Engineering & Technology website</div>", unsafe_allow_html=True)
 
@@ -94,6 +132,6 @@ if st.button("Ask the AI"):
         with st.spinner("Thinking... 💭"):
             answer = chat_about_website(url, question)
         st.success("Here’s what I found:")
-        st.markdown(f"<div style='background:#f9f9f9;padding:15px;border-radius:10px;border:1px solid #e0e0e0;'>{answer}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='answer-box'>{answer}</div>", unsafe_allow_html=True)
     else:
         st.warning("Please enter a question.")
