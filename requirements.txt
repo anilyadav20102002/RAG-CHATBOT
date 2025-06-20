@@ -1,5 +1,39 @@
 streamlit
-google-generativeai
-beautifulsoup4
-requests
+protobuf==3.20.3
+pytesseract
+pdf2image
 Pillow
+langchain==0.1.17
+langchain-community==0.0.36
+langchain-google-genai==0.0.8
+sentence-transformers
+chromadb==0.4.22
+google-generativeai
+pyttsx3
+speechrecognition
+huggingface-hub
+opencv-python
+python-dotenv
+
+Now:
+
+Save the above content into requirements.txt
+
+Push this file to your Streamlit Cloud repo
+
+Restart the app
+
+Option 2: Local installation (if using VS Code or your terminal)
+
+If you're working locally, activate your virtual environment and run:
+
+pip install -r requirements.txt
+
+Option 3: Pin exact working versions (optional)
+
+If Streamlit Cloud still errors, add these versions:
+
+langchain-core==0.1.44
+langchain==0.1.17
+langchain-community==0.0.36
+langchain-google-genai==0.0.8
